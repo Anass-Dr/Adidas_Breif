@@ -129,6 +129,7 @@
 						<h3>New Password</h3>
 						<form class="row login_form" action="/new-password" method="post" id="contactForm">
 							<?php echo csrf_field(); ?>
+                            <input type="hidden" name="_reset-token" value="<?php echo e($token); ?>">
 							<div class="col-md-12 form-group">
 								<input type="password" class="form-control" id="password" name="password" placeholder="New Password" onfocus="this.placeholder = ''" onblur="this.placeholder = 'New Password'" required>
 							</div>

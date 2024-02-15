@@ -10,9 +10,7 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::join('categories', 'products.category_id', '=', 'categories.id')
-            ->select('products.*', 'categories.name as category')
-            ->get();
+        $products = Product::paginate(2);
         $categories = Category::all();
         return view('back/products', ["products" => $products, "categories" => $categories]);
     }
@@ -23,8 +21,24 @@ class ProductController extends Controller
         $product["price"] = $request->input("price");
         $product["quantity"] = $request->input("quantity");
         $product["category_id"] = $request->input("category_id");
-        $product['img'] = $fileName;
+        $product['image'] = $fileName;
         $product->save();
+    }
+
+    public function search(Request $request)
+    {
+        $query = $request->input('query') ?? '';
+        $category = $request->input('category');
+        $products = Product::where('name', 'like', '%'.$query.'%');
+
+        if ($category) {
+            $products = $products->where('category_id', $category);
+        }
+
+        $products = $products->paginate(2)->appends(['query' => $query, 'category' => $category]);
+        $categories = Category::all();
+
+        return view('back.products', ["products" => $products, "categories" => $categories]);
     }
 
     /**

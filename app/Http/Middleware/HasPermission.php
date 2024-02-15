@@ -16,11 +16,12 @@ class HasPermission
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
 
+
     public function handle(Request $request, Closure $next): Response
     {
-        $publicRoutes = ['/', 'login', 'logout', 'register', 'password-reset', 'password-reset/{token}', 'new-password'];
         $uri = $request->route()->uri;
         $role_id = session('user_role') ?? '';
+
         if ($role_id) {
             $allowedRoutes = PermissionModel::where('role_id', $role_id)->get();
 
@@ -35,9 +36,6 @@ class HasPermission
             }
 
             return abort(401);
-        } else {
-            if (in_array($uri, $publicRoutes)) return $next($request);
-            else return abort(401);
-        }
+        } else return redirect('/login');
     }
 }

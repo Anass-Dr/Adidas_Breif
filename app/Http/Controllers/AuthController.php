@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Email;
+use App\Services\Token;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use App\Mail\ResetPasswordMail;
-use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -73,11 +73,11 @@ class AuthController extends Controller
 
             if ($user) {
                 # Generate token :
-                $token = \App\Services\GenerateToken::new($user->email);
+                $token = Token::generate($user);
                 $link = 'localhost:8000/password-reset/' . $token;
 
                 # Send Email :
-                Mail::to($user->email)->send(new ResetPasswordMail($link));
+                Email::send($user, $link);
                 return back()->with('status', 'Link sent. check your inbox');
             } else {
                 return back()->with('status', 'Email not found');
@@ -89,10 +89,9 @@ class AuthController extends Controller
 
     public function changePasswordPage(string $token)
     {
-        $tokenStored = session('password_reset_token');
-        $expired_time = session('password_token_expires_at');
-        if ($tokenStored === $token && $expired_time >= now()) {
-            return view('auth.new_password');
+        $isValid = Token::check($token);
+        if ($isValid) {
+            return view('auth.new_password', ['token' => $token]);
         } else {
             abort(401);
         }
@@ -103,8 +102,8 @@ class AuthController extends Controller
         $validatedData = $request->validate([
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
-
-        $user = User::where('email', session('password_reset_email'))->first();
+        $token = \App\Models\Token::where('content', $request->input('_reset-token'))->first();
+        $user = $token->user;
         $user->update($validatedData);
 
         return redirect()->route('login')->with('status', 'Password changed successfully');

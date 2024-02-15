@@ -595,3 +595,13 @@ License - nucleoapp.com/license/
 
 
 /* all icon font classes list here */
+
+nav[role='navigation'] {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding: 0 20px;
+}
+nav[role='navigation'] > div {
+  width: 100%;
+  justify-content: space-between !important;
+}

@@ -14,23 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 use App\Http\Controllers\AuthController;
-
-
-# - Front :
-Route::get('/', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
-
-# - Back :
-Route::get('/admin', [\App\Http\Controllers\DashboardController::class, 'index']);
-Route::resource('/admin/users', \App\Http\Controllers\UserController::class);
-Route::resource('/admin/categories', \App\Http\Controllers\CategoryController::class);
-Route::get('/admin/products', [\App\Http\Controllers\ProductController::class, 'index']);
-Route::post('/admin/products/add', [\App\Http\Controllers\ProductController::class, 'store']);
-Route::get('/admin/products/{id}', [\App\Http\Controllers\ProductController::class, 'edit']);
-Route::post('/admin/products/update', [\App\Http\Controllers\ProductController::class, 'update']);
-Route::post('/admin/products/delete', [\App\Http\Controllers\ProductController::class, 'destroy']);
-Route::get('/admin/roles', [\App\Http\Controllers\RoleController::class, 'index']);
-Route::post('/admin/roles', [\App\Http\Controllers\RoleController::class, 'updateRole']);
+use App\Http\Middleware\HasPermission;
 
 # - Authentication :
 Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -42,3 +26,22 @@ Route::get('password-reset', [AuthController::class, 'passwordReset']);
 Route::post('password-reset', [AuthController::class, 'passwordReset']);
 Route::get('password-reset/{token}', [AuthController::class, 'changePasswordPage']);
 Route::post('new-password', [AuthController::class, 'changePassword']);
+
+# middleware that group all routes
+Route::middleware(HasPermission::class)->group(function () {
+    # - Front :
+    Route::get('/', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+    # Back :
+    Route::get('/admin', [\App\Http\Controllers\DashboardController::class, 'index']);
+    Route::resource('/admin/users', \App\Http\Controllers\UserController::class);
+    Route::resource('/admin/categories', \App\Http\Controllers\CategoryController::class);
+    Route::get('/admin/products', [\App\Http\Controllers\ProductController::class, 'index'])->name('admin-products');
+    Route::get('/admin/products-search', [\App\Http\Controllers\ProductController::class, 'search'])->name('admin-products-search');
+    Route::post('/admin/products/add', [\App\Http\Controllers\ProductController::class, 'store']);
+    Route::get('/admin/products/{id}', [\App\Http\Controllers\ProductController::class, 'edit']);
+    Route::post('/admin/products/update', [\App\Http\Controllers\ProductController::class, 'update']);
+    Route::post('/admin/products/delete', [\App\Http\Controllers\ProductController::class, 'destroy']);
+    Route::get('/admin/roles', [\App\Http\Controllers\RoleController::class, 'index']);
+    Route::post('/admin/roles', [\App\Http\Controllers\RoleController::class, 'updateRole']);
+});
